@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Old Man Strength</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #14181a;
+    --card: #1c2224;
+    --card-hi: #232a2c;
+    --line: #ffffff12;
+    --chalk: #eae7e0;
+    --dim: #8d9598;
+    --copper: #c17a4a;
+    --copper-dim: #c17a4a22;
+    --steel: #4c6a6f;
+    --ok: #7cbf8f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 85% 0%, #ffffff07 0%, transparent 45%),
+      repeating-linear-gradient(0deg, #ffffff02 0px, #ffffff02 1px, transparent 1px, transparent 20px);
+    color: var(--chalk);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 60px;
+  }
+  header {
+    padding: 28px 20px 16px;
+    text-align: center;
+    border-bottom: 1px solid var(--line);
+  }
+  .kicker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--copper);
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  h1 {
+    font-family: 'Anton', sans-serif;
+    font-size: 44px;
+    letter-spacing: 1px;
+    margin: 6px 0 6px;
+    line-height: 0.95;
+    color: var(--chalk);
+    text-transform: uppercase;
+  }
+  .subline { color: var(--dim); font-size: 13px; font-weight: 500; }
+
+  .week-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .week-btn {
+    background: var(--card);
+    border: 1px solid var(--line);
+    color: var(--dim);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 8px 18px;
+    border-radius: 20px;
+    text-transform: uppercase;
+  }
+  .week-btn.active { background: var(--copper); color: #14181a; border-color: var(--copper); }
+
+  nav.days {
+    display: flex;
+    overflow-x: auto;
+    gap: 8px;
+    padding: 16px 16px 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  nav.days::-webkit-scrollbar { display: none; }
+  .day-btn {
+    flex: 0 0 auto;
+    background: var(--card);
+    border: 1px solid var(--line);
+    color: var(--dim);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .day-btn.active { background: var(--steel); color: #eae7e0; border-color: var(--steel); }
+
+  main { padding: 8px 16px 24px; max-width: 640px; margin: 0 auto; }
+  .day-panel { display: none; }
+  .day-panel.active { display: block; animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px);} to { opacity: 1; transform: translateY(0);} }
+
+  .focus-tag {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--copper);
+    background: var(--copper-dim);
+    border: 1px solid var(--copper);
+    padding: 4px 10px;
+    border-radius: 6px;
+    margin: 12px 0 0;
+  }
+
+  .block {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px 16px 4px;
+    margin-top: 14px;
+  }
+  .block-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--copper);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .block-label.warmup { color: var(--steel); }
+  .block-label.stamina { color: var(--ok); }
+
+  .exercise {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0 12px;
+    border-bottom: 1px solid #ffffff0a;
+  }
+  .exercise:last-child { border-bottom: none; }
+  .check {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 2px solid #6a7478;
+    background: #ffffff08;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+    color: transparent;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .check.on { background: var(--ok); border-color: var(--ok); color: #14181a; }
+  .ex-body { flex: 1; }
+  .ex-name { font-weight: 700; font-size: 15px; }
+  .ex-name.done { text-decoration: line-through; color: var(--dim); }
+  .ex-scheme { font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--dim); margin-top: 2px; }
+  .ex-rest { font-size: 11.5px; color: #6a7478; margin-top: 2px; font-style: italic; }
+
+  .schedule-card {
+    background: linear-gradient(135deg, var(--card), var(--card-hi));
+    border: 1px solid var(--copper-dim);
+    border-radius: 12px;
+    padding: 14px;
+    margin-top: 14px;
+    overflow-x: auto;
+  }
+  table.schedule { width: 100%; border-collapse: collapse; font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+  table.schedule th { color: var(--dim); text-transform: uppercase; letter-spacing: 1px; padding: 6px 8px; text-align: left; font-size: 10.5px; }
+  table.schedule td { padding: 8px; color: var(--chalk); border-top: 1px solid var(--line); }
+
+  .section-title {
+    font-family: 'Anton', sans-serif;
+    font-size: 24px;
+    letter-spacing: 0.5px;
+    margin: 28px 0 4px;
+    padding: 0 16px;
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+    text-transform: uppercase;
+  }
+  .note { font-size: 13px; color: var(--dim); line-height: 1.5; padding: 0 16px; max-width: 640px; margin: 8px auto 0; }
+  .note b { color: var(--chalk); }
+
+  #resetBtn {
+    margin-top: 14px;
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--dim);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="kicker">3-Day Push / Pull / Legs</div>
+  <h1>OLD MAN STRENGTH</h1>
+  <div class="subline">General Strength — Free Weights</div>
+  <div class="week-toggle">
+    <button class="week-btn active" id="week1Btn">Week 1</button>
+    <button class="week-btn" id="week2Btn">Week 2</button>
+  </div>
+  <button id="resetBtn">Reset Checks</button>
+</header>
+
+<nav class="days" id="dayNav"></nav>
+<main id="dayContainer"></main>
+
+<div class="section-title">Schedule</div>
+<main style="padding-top:0">
+  <div class="schedule-card">
+    <table class="schedule">
+      <tr><th></th><th>Mon</th><th>Wed</th><th>Fri</th></tr>
+      <tr><td>Week 1</td><td>Push (Bench)</td><td>Pull (Row)</td><td>Legs (Squat)</td></tr>
+      <tr><td>Week 2</td><td>Push (OHP)</td><td>Pull (Pulldown)</td><td>Legs (Deadlift)</td></tr>
+    </table>
+  </div>
+  <div class="note">Same three muscle groups every week — the main lift rotates every other week so each one gets a real focused week to build strength.</div>
+</main>
+
+<div class="section-title">Staying Sharp</div>
+<main style="padding-top:0">
+  <div class="note">
+    <b>Log every session.</b> Weight and reps, even in the phone Notes app — six main lifts rotating in and out means a log is what makes the progress visible.<br><br>
+    <b>Rotate a small accessory every 3-4 weeks.</b> Bench, OHP, Row, Pulldown, Squat, and Deadlift already give plenty of variety on their own.<br><br>
+    <b>2-3 Reps in Reserve always.</b> No chasing failure — consistency over years beats intensity for a few weeks.
+  </div>
+</main>
+
+<script>
+const data = {
+  push: {
+    label: 'Push',
+    week1: {
+      tag: 'Bench Focus',
+      blocks: [
+        { type: 'warmup', title: 'Warm-Up', items: [['2 Sets',''],['Arm Circles','8 each direction'],['Scapular Push-Ups','10 reps']]},
+        { type: 'strength', title: 'Strength', items: [['Flat DB/Barbell Bench Press', '3 x 8-10 · 2-3 RIR · Rest 2-3 min']]},
+        { type: 'accessory', title: 'Accessory', items: [
+          ['Standing DB Shoulder Press', '2 x 10-12 · Rest 90s'],
+          ['Incline DB Press', '2 x 10-12 · Rest 90s'],
+          ['DB Overhead Triceps Ext.', '2 x 12-15 · Rest 60s'],
+        ]},
+        { type: 'stamina', title: 'Stamina', items: [['Incline Treadmill Walk', '12 min · moderate incline']]},
+      ]
+    },
+    week2: {
+      tag: 'Overhead Press Focus',
+      blocks: [
+        { type: 'warmup', title: 'Warm-Up', items: [['2 Sets',''],['Arm Circles','8 each direction'],['Scapular Push-Ups','10 reps']]},
+        { type: 'strength', title: 'Strength', items: [['Standing Barbell/DB OHP', '3 x 8-10 · 2-3 RIR · Rest 2-3 min']]},
+        { type: 'accessory', title: 'Accessory', items: [
+          ['Flat DB Bench Press', '2 x 10-12 · Rest 90s'],
+          ['Incline DB Press', '2 x 10-12 · Rest 90s'],
+          ['DB Overhead Triceps Ext.', '2 x 12-15 · Rest 60s'],
+        ]},
+        { type: 'stamina', title: 'Stamina', items: [['Stationary Bike', '10 min · easy pace']]},
+      ]
+    }
+  },
+  pull: {
+    label: 'Pull',
+    week1: {
+      tag: 'Row Focus',
+      blocks: [
+        { type: 'warmup', title: 'Warm-Up', items: [['2 Sets',''],['Glute Bridges','10 reps'],['Band Pull-Aparts','10 reps']]},
+        { type: 'strength', title: 'Strength', items: [['Barbell/DB Row', '3 x 8-10 · 2-3 RIR · Rest 2-3 min']]},
+        { type: 'accessory', title: 'Accessory', items: [
+          ['Lat Pulldown', '2 x 10-12 · Rest 90s'],
+          ['One-Arm DB Row', '2 x 10-12/side · Rest 90s'],
+          ['DB Curl', '2 x 12-15 · Rest 60s'],
+        ]},
+        { type: 'stamina', title: 'Stamina', items: [['Incline Treadmill Walk', '12 min · moderate incline']]},
+      ]
+    },
+    week2: {
+      tag: 'Pull-Up / Pulldown Focus',
+      blocks: [
+        { type: 'warmup', title: 'Warm-Up', items: [['2 Sets',''],['Glute Bridges','10 reps'],['Band Pull-Aparts','10 reps']]},
+        { type: 'strength', title: 'Strength', items: [['Lat Pulldown or Pull-Ups', '3 x 8-10 · 2-3 RIR · Rest 2-3 min']]},
+        { type: 'accessory', title: 'Accessory', items: [
+          ['Barbell/DB Row', '2 x 10-12 · Rest 90s'],
+          ['One-Arm DB Row', '2 x 10-12/side · Rest 90s'],
+          ['DB Curl', '2 x 12-15 · Rest 60s'],
+        ]},
+        { type: 'stamina', title: 'Stamina', items: [['Elliptical or Easy Jog', '10 min · easy pace']]},
+      ]
+    }
+  },
+  legs: {
+    label: 'Legs',
+    week1: {
+      tag: 'Squat Focus',
+      blocks: [
+        { type: 'warmup', title: 'Warm-Up', items: [['2 Sets',''],['Sit-to-Stands','10 reps'],['Leg Swings','8/side']]},
+        { type: 'strength', title: 'Strength', items: [['Barbell Back Squat', '3 x 8-10 · 2-3 RIR · Rest 2-3 min']]},
+        { type: 'accessory', title: 'Accessory', items: [
+          ['DB Romanian Deadlift', '2 x 10-12 · Rest 90s'],
+          ['DB Walking Lunge / Step-Up', '2 x 10/leg · Rest 90s'],
+          ['Standing DB Calf Raise', '2 x 15 · Rest 60s'],
+        ]},
+        { type: 'stamina', title: 'Stamina', items: [['Incline Treadmill Walk', '15 min · steeper incline']]},
+      ]
+    },
+    week2: {
+      tag: 'Deadlift Focus',
+      blocks: [
+        { type: 'warmup', title: 'Warm-Up', items: [['2 Sets',''],['Sit-to-Stands','10 reps'],['Leg Swings','8/side']]},
+        { type: 'strength', title: 'Strength', items: [['Barbell Deadlift', '3 x 6-8 · 2-3 RIR · Rest 2-3 min']]},
+        { type: 'accessory', title: 'Accessory', items: [
+          ['DB Goblet Squat', '2 x 10-12 · Rest 90s'],
+          ['DB Walking Lunge / Step-Up', '2 x 10/leg · Rest 90s'],
+          ['Standing DB Calf Raise', '2 x 15 · Rest 60s'],
+        ]},
+        { type: 'stamina', title: 'Stamina', items: [['Incline Treadmill Walk', '12 min · moderate incline']]},
+      ]
+    }
+  },
+  conditioning: {
+    label: 'Conditioning',
+    optional: true,
+    week1: {
+      tag: 'Optional — No Lifting',
+      blocks: [
+        { type: 'stamina', title: 'Pick One', items: [
+          ['Hike', '45-90 min · moderate trail'],
+          ['Long Incline Walk', '30-40 min · steady incline'],
+          ['Bike Ride', '30-45 min · easy-to-moderate pace'],
+          ['Swim', '20-30 min · easy pace'],
+          ['Yard Work / Chores', '30+ min · counts if moving'],
+        ]},
+      ]
+    },
+    week2: {
+      tag: 'Optional — No Lifting',
+      blocks: [
+        { type: 'stamina', title: 'Pick One', items: [
+          ['Hike', '45-90 min · moderate trail'],
+          ['Long Incline Walk', '30-40 min · steady incline'],
+          ['Bike Ride', '30-45 min · easy-to-moderate pace'],
+          ['Swim', '20-30 min · easy pace'],
+          ['Yard Work / Chores', '30+ min · counts if moving'],
+        ]},
+      ]
+    }
+  }
+};
+
+const dayOrder = ['push', 'pull', 'legs', 'conditioning'];
+const nav = document.getElementById('dayNav');
+const container = document.getElementById('dayContainer');
+const checkState = {};
+const STORAGE_KEY = 'old-man-strength-checks';
+let currentWeek = 'week1';
+let currentDayIdx = 0;
+
+async function loadState() {
+  try {
+    const result = await window.storage.get(STORAGE_KEY);
+    if (result && result.value) Object.assign(checkState, JSON.parse(result.value));
+  } catch (e) {}
+}
+async function saveState() {
+  try { await window.storage.set(STORAGE_KEY, JSON.stringify(checkState)); } catch (e) {}
+}
+async function resetAllChecks() {
+  Object.keys(checkState).forEach(k => delete checkState[k]);
+  await saveState();
+  renderDay(currentDayIdx);
+}
+
+function renderDay(idx) {
+  currentDayIdx = idx;
+  const dayId = dayOrder[idx];
+  const day = data[dayId];
+  const weekData = day[currentWeek];
+  container.innerHTML = '';
+
+  const panel = document.createElement('div');
+  panel.className = 'day-panel active';
+
+  const tag = document.createElement('div');
+  tag.className = 'focus-tag';
+  tag.textContent = weekData.tag;
+  panel.appendChild(tag);
+
+  weekData.blocks.forEach((block, bi) => {
+    const blockEl = document.createElement('div');
+    blockEl.className = 'block';
+    const label = document.createElement('div');
+    label.className = 'block-label ' + block.type;
+    label.textContent = block.title;
+    blockEl.appendChild(label);
+
+    block.items.forEach((item, ii) => {
+      const [name, scheme] = item;
+      const key = dayId + '-' + currentWeek + '-' + bi + '-' + ii;
+      const exEl = document.createElement('div');
+      exEl.className = 'exercise';
+
+      const check = document.createElement('div');
+      check.className = 'check' + (checkState[key] ? ' on' : '');
+      check.textContent = '✓';
+
+      const body = document.createElement('div');
+      body.className = 'ex-body';
+      const nameEl = document.createElement('div');
+      nameEl.className = 'ex-name' + (checkState[key] ? ' done' : '');
+      nameEl.textContent = name;
+      body.appendChild(nameEl);
+      if (scheme) {
+        const schemeEl = document.createElement('div');
+        schemeEl.className = 'ex-scheme';
+        schemeEl.textContent = scheme;
+        body.appendChild(schemeEl);
+      }
+
+      check.onclick = () => {
+        checkState[key] = !checkState[key];
+        check.classList.toggle('on', checkState[key]);
+        nameEl.classList.toggle('done', checkState[key]);
+        saveState();
+      };
+
+      exEl.appendChild(check);
+      exEl.appendChild(body);
+      blockEl.appendChild(exEl);
+    });
+    panel.appendChild(blockEl);
+  });
+
+  container.appendChild(panel);
+}
+
+async function init() {
+  await loadState();
+
+  dayOrder.forEach((dayId, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'day-btn' + (i === 0 ? ' active' : '');
+    btn.textContent = data[dayId].label + (data[dayId].optional ? ' •' : '');
+    if (data[dayId].optional) btn.style.borderStyle = 'dashed';
+    btn.onclick = () => {
+      document.querySelectorAll('.day-btn').forEach((b, idx) => b.classList.toggle('active', idx === i));
+      renderDay(i);
+    };
+    nav.appendChild(btn);
+  });
+
+  renderDay(0);
+
+  document.getElementById('week1Btn').onclick = () => {
+    currentWeek = 'week1';
+    document.getElementById('week1Btn').classList.add('active');
+    document.getElementById('week2Btn').classList.remove('active');
+    renderDay(currentDayIdx);
+  };
+  document.getElementById('week2Btn').onclick = () => {
+    currentWeek = 'week2';
+    document.getElementById('week2Btn').classList.add('active');
+    document.getElementById('week1Btn').classList.remove('active');
+    renderDay(currentDayIdx);
+  };
+  document.getElementById('resetBtn').onclick = resetAllChecks;
+}
+
+init();
+</script>
+
+</body>
+</html>
